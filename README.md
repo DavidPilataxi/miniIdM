@@ -195,9 +195,16 @@ Confirmar en Grafana (`localhost:3000`) el dashboard con CPU/memoria de los
 4 nodos y `ldap_replication_lag_seconds`.
 
 
+## Uso de herramientas de IA
 
-## Créditos
+Durante el desarrollo de este proyecto se utilizaron herramientas de inteligencia artificial como apoyo para:
+- investigación técnica
+- comprensión de conceptos
+- depuración
+- documentación
 
-Desarrollado individualmente para el laboratorio de Infraestructura de
-Identidad Segura de la FIS-EPN. Ver el informe PDF para el detalle de ayuda
-externa utilizada.
+Toda la implementación, adaptación, pruebas y comprensión del código fueron realizadas y verificadas manualmente.
+
+## Autor
+
+David Pilataxi — Computación Distribuida
