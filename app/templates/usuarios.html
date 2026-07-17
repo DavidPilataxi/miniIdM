@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Usuarios</h2>
+<p><a href="{{ url_for('admin.nuevo_usuario') }}">+ Nuevo usuario</a></p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in usuarios %}
+        <tr>
+            <td>{{ u.uid }}</td>
+            <td>{{ u.nombre }}</td>
+            <td>{{ u.correo }}</td>
+            <td>{{ u.rol }}</td>
+            <td>
+                <a href="{{ url_for('admin.editar_usuario', uid=u.uid) }}">Editar</a>
+                <form method="POST" action="{{ url_for('admin.eliminar_usuario', uid=u.uid) }}" style="display:inline">
+                    <button type="submit" onclick="return confirm('¿Eliminar a {{ u.uid }}?')">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

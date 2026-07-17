@@ -1,0 +1,4 @@
+dn: uid=dpilataxi,ou=People,dc=fis,dc=epn,dc=ec
+changetype: modify
+add: employeeType
+employeeType: admin

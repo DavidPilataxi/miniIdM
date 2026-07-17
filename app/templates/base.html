@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>miniIDM</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>miniIDM</h1>
+        <nav>
+            <a href="{{ url_for('home.home') }}">Inicio</a> |
+            {% if session.usuario and session.usuario.rol == 'admin' %}
+                <a href="{{ url_for('admin.usuarios') }}">Usuarios</a> |
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}">Salir</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

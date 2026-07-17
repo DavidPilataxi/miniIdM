@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ 'Nuevo usuario' if modo == 'crear' else 'Editar usuario' }}</h2>
+
+{% if error %}
+<p style="color:red">{{ error }}</p>
+{% endif %}
+
+<form method="POST">
+    <label>Usuario:
+        <input type="text" name="uid" value="{{ usuario.uid if usuario else '' }}" {% if modo=='editar' %}readonly{%
+            endif %} required>
+    </label><br>
+
+    {% if modo == 'crear' %}
+    <label>Nombre:
+        <input type="text" name="nombre" required>
+    </label><br>
+
+    <label>Apellido:
+        <input type="text" name="apellido" required>
+    </label><br>
+    {% else %}
+    <label>Nombre completo:
+        <input type="text" name="nombre" value="{{ usuario.nombre }}" required>
+    </label><br>
+    {% endif %}
+
+    <label>Correo:
+        <input type="email" name="correo" value="{{ usuario.correo if usuario else '' }}" required>
+    </label><br>
+
+    {% if modo == 'crear' %}
+    <label>Contraseña:
+        <input type="password" name="password" required>
+    </label><br>
+    {% endif %}
+
+    <label>Rol:
+        <select name="rol">
+            <option value="user" {% if usuario and usuario.rol=='user' %}selected{% endif %}>user</option>
+            <option value="admin" {% if usuario and usuario.rol=='admin' %}selected{% endif %}>admin</option>
+        </select>
+    </label><br>
+
+    <button type="submit">Guardar</button>
+</form>
+{% endblock %}

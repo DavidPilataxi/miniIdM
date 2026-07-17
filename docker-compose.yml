@@ -1,0 +1,167 @@
+version: "3.8"
+
+# =============================================================================
+# MiniIdM - Infraestructura de Identidad Segura para la FIS
+# Arquitectura consolidada en 4 nodos (economico en recursos):
+#
+#   nodo1 -> CA Raiz + LDAP Master + KDC Primario
+#   nodo2 -> LDAP Replica + KDC Secundario
+#   nodo3 -> Balanceador de carga (HAProxy) + Webserver (TLS + Kerberos)
+#   nodo4 -> Cliente Linux + Monitoreo (Prometheus/Grafana)
+#
+# Todos los contenedores corren systemd real (imagen jrei/systemd-ubuntu),
+# lo cual permite usar systemctl start/stop/enable tal como pide el proyecto.
+# =============================================================================
+
+networks:
+  fis_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+services:
+
+  nodo1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: miniidm/base:latest
+    container_name: nodo1
+    hostname: nodo1.fis.epn.ec
+    privileged: true          # necesario para systemd y para iptables en pruebas de HA
+    cgroup: host
+    tmpfs:
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - nodo1_data:/var/lib
+      - ./pki:/opt/pki
+      - ./scripts:/opt/scripts
+      - ./shared:/opt/shared
+    networks:
+      fis_net:
+        ipv4_address: 172.20.0.11
+        aliases:
+          - ca.fis.epn.ec
+          - ldap1.fis.epn.ec
+          - kdc1.fis.epn.ec
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    ports:
+      - "1636:636"   # LDAPS
+      - "1088:88"    # Kerberos (informativo, en produccion real seria host networking)
+    restart: unless-stopped
+
+  nodo2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: miniidm/base:latest
+    container_name: nodo2
+    hostname: nodo2.fis.epn.ec
+    privileged: true
+    cgroup: host
+    tmpfs:
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - nodo2_data:/var/lib
+      - ./pki:/opt/pki            
+      - ./scripts:/opt/scripts    
+      - ./shared:/opt/shared
+    networks:
+      fis_net:
+        ipv4_address: 172.20.0.12
+        aliases:
+          - ldap2.fis.epn.ec
+          - kdc2.fis.epn.ec
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    ports:
+      - "2636:636"
+    restart: unless-stopped
+    depends_on:
+      - nodo1
+
+  nodo3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: miniidm/base:latest
+    container_name: nodo3
+    hostname: nodo3.fis.epn.ec
+    privileged: true
+    cgroup: host
+    tmpfs:
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - nodo3_data:/var/lib
+      - ./pki:/opt/pki
+      - .:/opt/miniidm 
+    networks:
+      fis_net:
+        ipv4_address: 172.20.0.13
+        aliases:
+          - lb.fis.epn.ec
+          - webserver.fis.epn.ec
+          - ldap.fis.epn.ec
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    ports:
+      - "8080:80"
+      - "8443:443"
+    restart: unless-stopped
+    depends_on:
+      - nodo1
+      - nodo2
+
+  nodo4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: miniidm/base:latest
+    container_name: nodo4
+    hostname: nodo4.fis.epn.ec
+    privileged: true
+    cgroup: host
+    tmpfs:
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - nodo4_data:/var/lib
+      - ./pki:/opt/pki
+      - ./scripts:/opt/scripts
+      - ./shared:/opt/shared
+    networks:
+      fis_net:
+        ipv4_address: 172.20.0.14
+        aliases:
+          - client1.fis.epn.ec
+          - monitor.fis.epn.ec
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    ports:
+      - "9090:9090"  # Prometheus
+      - "3000:3000"  # Grafana
+      - "9100:9100"  # node_exporter (util para verificar desde el host)
+    restart: unless-stopped
+    depends_on:
+      - nodo1
+      - nodo2
+      - nodo3
+
+volumes:
+  nodo1_data:
+  nodo2_data:
+  nodo3_data:
+  nodo4_data:

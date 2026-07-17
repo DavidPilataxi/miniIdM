@@ -1,0 +1,11 @@
+basicConstraints=CA:FALSE
+keyUsage=digitalSignature,keyEncipherment
+extendedKeyUsage=serverAuth,clientAuth
+subjectAltName=@alt_names
+
+[alt_names]
+DNS.1 = ldap2.fis.epn.ec
+DNS.2 = nodo2.fis.epn.ec
+DNS.3 = kdc2.fis.epn.ec
+DNS.4 = ldap.fis.epn.ec
+IP.1  = 172.20.0.12
